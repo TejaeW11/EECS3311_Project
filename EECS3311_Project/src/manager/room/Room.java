@@ -29,7 +29,15 @@ public class Room {
 		this.building = building;
 		this.roomNumber = roomNumber;
 		this.capacity = capacity;
-		this.status = status;
+		
+		 if (status == null) {
+	        this.status = "Enabled";
+	    } else if (status.equals("Enabled") || status.equals("Disabled") || 
+		               status.equals("Maintenance") || status.equals("Available")) {
+	        this.status = status;
+	    } else {
+	        throw new IllegalArgumentException("Status must be 'Enabled', 'Disabled', 'Maintenance', or 'Available'.");
+	    }
 	}
 
 	
@@ -37,7 +45,7 @@ public class Room {
 	public void setStatus(String status) { 
         
         if (status == null || (!status.equals("Enabled") && !status.equals("Disabled") 
-                && !status.equals("Maintenance"))) {
+                && !status.equals("Maintenance") && !status.equals("Available"))) {
             throw new IllegalArgumentException("Status must be 'Enabled', 'Disabled', or 'Maintenance'.");
         }
         this.status = status; 

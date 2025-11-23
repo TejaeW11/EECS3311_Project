@@ -17,6 +17,8 @@ import manager.payment.PaymentService;
 import manager.room.Room;
 import partnersystem.RoomAvailabilityService;
 import pricing.money.Money;
+import storage.IStorageService;
+import storage.CSVStorageService;
 
 public class SystemFacade {
 
@@ -283,6 +285,36 @@ public class SystemFacade {
         }
         return paymentService.calculateBookingPrice(booking, booking.getUser());
     }
+    
+    
+	 // ================//
+	 // STORAGE METHODS //
+	 // ================//
+
+	 public void initializeStorage() {
+	     IStorageService storageService = new CSVStorageService();
+	     bookingManager.setStorageService(storageService);
+	     System.out.println("Storage initialized.");
+	 }
+
+
+	 public void initializeStorage(IStorageService storageService) {
+	     bookingManager.setStorageService(storageService);
+	     System.out.println("Custom storage initialized.");
+	 }
+
+	 //Saves all current data to storage.
+	 public void saveAllData() {
+	     bookingManager.saveAllDataToStorage();
+	 }
+
+ 
+	 // Gets the storage service 
+	 public IStorageService getStorageService() {
+	     return bookingManager.getStorageService();
+	 }
+    
+    
     
     
     //===================//

@@ -43,6 +43,10 @@ public class Booking implements IBookingSubject{
         if (startTime.after(endTime) || startTime.equals(endTime)) {
             throw new IllegalArgumentException("Start time must be before end time.");
         }
+        
+        if (startTime.after(new Date()) && (startTime.after(endTime) || startTime.equals(endTime))) {
+            throw new IllegalArgumentException("Start time must be before end time.");
+        }
 		
 		this.bookingId = bookingId;
 		this.startTime = startTime;
@@ -153,6 +157,10 @@ public class Booking implements IBookingSubject{
     }
 
 
+    public void setBookingId(int bookingId) {
+        this.bookingId = bookingId;
+    }
+    
     public int getBookingId() { return bookingId; }
     public Date getStartTime() { return startTime; }
     public Date getEndTime() { return endTime; }

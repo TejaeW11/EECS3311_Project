@@ -8,6 +8,7 @@ import accounts.model.UserAccount;
 import booking.model.Booking;
 import manager.room.Room;
 import partnersystem.RoomAvailabilityService;
+import storage.IStorageService;
 
 public class BookingManager {
 	private static BookingManager instance;
@@ -15,6 +16,7 @@ public class BookingManager {
     private List<Booking> bookings;
     private RoomAvailabilityService availabilityService;
     private List<UserAccount> users;
+    private IStorageService storageService;
 
     private BookingManager() {
         this.rooms = new ArrayList<>();
@@ -110,6 +112,12 @@ public class BookingManager {
     	
     	Booking booking = new Booking(user, room, startTime, endTime);
         bookings.add(booking);
+        
+        // Saves to storage
+        if (storageService != null) {
+            storageService.saveBooking(booking);
+        }
+        
         return booking;
     }
 
@@ -124,6 +132,11 @@ public class BookingManager {
             }
         }
         rooms.add(room);
+        
+        // Saves to storage
+        if (storageService != null) {
+            storageService.saveRoom(room);
+        }
     }
 
     public void updateRoomStatus(int roomId, String status) {
@@ -140,6 +153,11 @@ public class BookingManager {
          }
          
          foundRoom.setStatus(status);
+         
+         // Saves to storage
+         if (storageService != null) {
+             storageService.updateRoom(foundRoom);
+         }
     }
     
     public Booking getBookingById(int bookingId) {
@@ -182,6 +200,11 @@ public class BookingManager {
             }
         }
         users.add(user);
+        
+        // Saves to storage
+        if (storageService != null) {
+            storageService.saveUser(user);
+        }
     }
     
     public void cancelBooking(int bookingId) {
@@ -190,6 +213,11 @@ public class BookingManager {
             throw new IllegalArgumentException("Booking with ID " + bookingId + " not found.");
         }
         booking.cancel(); 
+        
+        // Updates storage
+        if (storageService != null) {
+            storageService.updateBooking(booking);
+        }
     }
     
     public void extendBooking(int bookingId, Date newEndTime) {
@@ -216,6 +244,11 @@ public class BookingManager {
         
         booking.extendEndTime(newEndTime);
         booking.notifyObservers("Booking extended until " + newEndTime);
+        
+        // Updates storage
+        if (storageService != null) {
+            storageService.updateBooking(booking);
+        }
     }
     
     public List<Booking> getBookingsForUser(int userId) {
@@ -226,6 +259,15 @@ public class BookingManager {
             }
         }
         return userBookings;
+    }
+    
+    public UserAccount getUserByEmail(String email) {
+        for (UserAccount user : users) {
+            if (user.getEmail().equals(email)) {
+                return user;
+            }
+        }
+        return null;
     }
     
     public List<Room> getAllRooms() {
@@ -240,5 +282,77 @@ public class BookingManager {
         return new ArrayList<>(users);
     }
     
+    
+    // =========== //
+    // CSV METHODS //
+    // =========== //
+    
+    //Sets the storage service and loads existing data
+    public void setStorageService(IStorageService storageService) {
+        this.storageService = storageService;
+        if (storageService != null) {
+            loadDataFromStorage();
+        }
+    }
+    
+    // Gets the current storage service
+    public IStorageService getStorageService() {
+        return storageService;
+    }
+    
+    // Loads all data from storage into memory
+    private void loadDataFromStorage() {
+        if (storageService == null) return;
+        
+        System.out.println("Loading data from storage...");
+        
+        // Load users first (bookings depend on them)
+        List<UserAccount> loadedUsers = storageService.loadAllUsers();
+        this.users = new ArrayList<>(loadedUsers);
+        System.out.println("  Loaded " + users.size() + " users");
+        
+        // Load rooms (bookings depend on them)
+        List<Room> loadedRooms = storageService.loadAllRooms();
+        this.rooms = new ArrayList<>(loadedRooms);
+        System.out.println("  Loaded " + rooms.size() + " rooms");
+        
+        // Load bookings
+        List<Booking> loadedBookings = storageService.loadAllBookings();
+        this.bookings = new ArrayList<>(loadedBookings);
+        System.out.println("  Loaded " + bookings.size() + " bookings");
+    }
+    
+    // Saves all in-memory data to storage
+    public void saveAllDataToStorage() {
+        if (storageService == null) {
+            System.err.println("No storage service configured.");
+            return;
+        }
+        
+        System.out.println("Saving all data to storage...");
+        
+        storageService.clearAll();
+        
+        for (UserAccount user : users) {
+            storageService.saveUser(user);
+        }
+        
+        for (Room room : rooms) {
+            storageService.saveRoom(room);
+        }
+        
+        for (Booking booking : bookings) {
+            storageService.saveBooking(booking);
+        }
+        
+        System.out.println("All data saved to storage.");
+    }
+    
+    // Updates a booking's state in storage
+    public void persistBookingUpdate(Booking booking) {
+        if (storageService != null && booking != null) {
+            storageService.updateBooking(booking);
+        }
+    }
 
 }

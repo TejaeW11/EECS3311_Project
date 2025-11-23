@@ -12,7 +12,8 @@ public class Main {
 //		Test8.testReq8_Validation();
 //		Test8_2.testReq8_CancelEdit();
 //		Test9.testReq9();
-		Test10.testReq10();
+//		Test10.testReq10();
+		TestStorage.testStorage();
 
 	}
 
